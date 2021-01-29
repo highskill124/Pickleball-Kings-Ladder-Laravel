@@ -15,7 +15,7 @@ return [
 
     'stateful' => explode(',', env(
         'SANCTUM_STATEFUL_DOMAINS',
-        'localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1,.kings.com, kings.com,.nextscrum.dev, kings.nextscrum.dev'
+        'localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1,.kings.com, kings.com,.nextscrum.dev, kings.nextscrum.dev,pickleball-kings.nextscrum.dev'
     )),
 
     /*
