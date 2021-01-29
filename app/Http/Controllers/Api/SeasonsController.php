@@ -24,7 +24,7 @@ class SeasonsController extends Controller
     public function index()
     {
         //
-        $seasons = Seasons::all();
+        $seasons = Seasons::orderBy('start_date', 'ASC')->get();
         if ($seasons) {
             foreach ($seasons as $key => $value) {
                 $value['start_date'] = Carbon::parse($value['start_date'])->format('M d, Y');
