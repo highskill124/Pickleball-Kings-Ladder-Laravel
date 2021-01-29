@@ -262,20 +262,25 @@ class MatchesController extends Controller
 
             // Calculatig winner points according to Algorithem
 
+            
             // Case 1: User 1 (Winner) curent rank < User 2(Loser) Current Rank
 
+            
             // ::FORMULA::   If higher-ranked: 10 plus Difference in games in sets won  :: 
             if ($user1_rank <  $user2_rank) {
                 $user1_rank = 10 + $user1_win_points;
             }
 
             // Case 2: User 1 (Winner) curent rank > User 2(Loser) Current Rank
-            // ::FORMULA::   If lower-ranked: 15 plus ((Difference in games in sets won times the Difference in rankings up to 7) divided by 2)  :: 
+            // ::FORMULA::   If lower-ranked: 15 plus ((Difference in points in games won times the Difference in rankings up to 7) divided by 4)  :: 
 
             elseif ($user1_rank > $user2_rank) {
                 /* for lower ranks */
                 $diff = $user1_rank - $user2_rank;
-                $user1_rank = 15 + (($user1_win_points * $diff) / 2);
+                if($diff>7){
+                    $diff =7;
+                }
+                $user1_rank = 15 + (($user1_win_points * $diff) / 4);
             }
             // Case 3: User 1 (Winner) curent rank == User 2(Loser) Current Rank
             // ::FORMULA::   If tied: 15 plus Difference in games in sets won :: 
@@ -285,10 +290,9 @@ class MatchesController extends Controller
             }
 
             // calculate points for loser (user2)
-            $user2_rank = 10;
-            $user2_points = $data->point1_user2 + $data->point2_user2 + $data->point3_user2;
-            if($user2_points>10){
-                $user2_rank = 10;
+            $user2_rank = $user2_win_points;
+            if($user2_rank>12){
+                $user2_rank = 12;
             }
             // Save into DB = two entries => one for User1 (winner) and one for User2 (loser)
 
@@ -327,13 +331,16 @@ class MatchesController extends Controller
             }
 
             // Case 2: User 2 (Winner) curent rank > User 1(Loser) Current Rank
-            // ::FORMULA::   If lower-ranked: 15 plus ((Difference in games in sets won times the Difference in rankings up to 7) divided by 2)  :: 
+            // ::FORMULA::   If lower-ranked: 15 plus ((Difference in games in sets won times the Difference in rankings up to 7) divided by 4)  :: 
 
             elseif ($user2_rank > $user1_rank) {
                
                 /* for lower ranks */
                 $diff = $user2_rank - $user1_rank;
-                $user2_rank = 15 + (($user2_win_points * $diff) / 2);
+                if($diff>7){
+                    $diff =7;
+                }
+                $user2_rank = 15 + (($user2_win_points * $diff) / 4);
                 // return '>  '.$user2_win_points;
             }
             // Case 3: User 1 (Winner) curent rank == User 2(Loser) Current Rank
@@ -341,15 +348,18 @@ class MatchesController extends Controller
 
             elseif ($user1_rank == $user2_rank) {
                 $user2_rank = 15 + $user2_win_points;
-                // return '=  '.$user2_rank;
             }
 
             // calculate points for loser (user1)
-            $user1_rank = 10;
-            $user1_points = $data->point1_user1 + $data->point2_user1 + $data->point3_user1;
+            // $user1_rank = 10;
+            // $user1_points = $data->point1_user1 + $data->point2_user1 + $data->point3_user1;
             
-            if($user1_points>10){
-                $user1_rank = 10;
+            // if($user1_points>10){
+            //     $user1_rank = 10;
+            // }
+            $user1_rank = $user1_win_points;
+            if($user1_rank>12){
+                $user1_rank = 12;
             }
 
             // Save into DB = two entries => one for User1 (winner) and one for User2 (loser)
