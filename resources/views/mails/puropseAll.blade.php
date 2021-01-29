@@ -1,0 +1,1 @@
+This emails is regarding your proposal from  {{$data->full_name ? $data->full_name :''}}
