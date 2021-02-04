@@ -189,6 +189,33 @@ class SeasonsController extends Controller
     }
     public function getNextAvailableSeason(){
         $season = Seasons::orderBy('start_date', 'ASC')->first();
+        if($season){
+            $weekMap = [
+                0 => 'Sunday',
+                1 => 'Monday',
+                2 => 'Tuesday',
+                3 => 'Wedesday',
+                4 => 'Thrusday',
+                5 => 'Friday',
+                6 => 'Saturday',
+            ];
+            if(isset($season['start_date'])){
+                $season['start_date_formated']=  $weekMap[Carbon::parse($season['start_date'])->dayOfWeek]. ' '.Carbon::parse($season['start_date'])->format('M d');
+            }
+            if(isset($season['end_date'])){
+                $season['end_date_formated']=  $weekMap[Carbon::parse($season['end_date'])->dayOfWeek]. ' '.Carbon::parse($season['end_date'])->format('M d');
+            }
+            if(isset($season['registration_deadline'])){
+                $season['registration_deadline_formated'] = Carbon::parse($season['registration_deadline'])->format('M d');
+            }
+            if(isset($season['playoff_date'])){
+                $season['playoff1_formated'] = Carbon::parse($season['playoff_date'])->format('M d');
+            }
+            if(isset($season['playoff_date2'])){
+                $season['playoff2_formated'] = Carbon::parse($season['playoff_date2'])->format('M d');
+            }      
+            
+        }
         return $season;
     }
 }
