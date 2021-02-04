@@ -14,7 +14,7 @@ class SeasonsController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth:sanctum', 'verified'])->except('index');
+        $this->middleware(['auth:sanctum', 'verified'])->except('index','getNextAvailableSeason');
     }
     /**
      * Display a listing of the resource.
@@ -54,6 +54,7 @@ class SeasonsController extends Controller
      */
     public function store(Request $request)
     {
+        
         $this->validate($request, [
             'title' => 'required',
             'match_single_doubles_id' => 'required|exists:match_single_doubles,id',
@@ -61,7 +62,8 @@ class SeasonsController extends Controller
             'end_date' => 'required|date',
             'registration_deadline' => 'required|date',
             'playoff_date' => 'required|date',
-            'number_of_weeks'=>'required'
+            'number_of_weeks'=>'required',
+            'late_fee' =>'required'
         ]);
         $season = new Seasons;
         $season->title = $request->title;
@@ -71,40 +73,40 @@ class SeasonsController extends Controller
         $season->registration_deadline = $request->registration_deadline;
         $season->playoff_date = $request->playoff_date;
         $season->number_of_weeks = $request->number_of_weeks;
+        $season->late_fee = $request->late_fee;
         if ($season->save()) {
-            $match_categories = MatchRankCategory::where('match_single_doubles_id',$request->match_single_doubles_id)->get();
-            $match_single_doubles = MatchSingleDoubles::findOrFail($request->match_single_doubles_id);
+            
+            $match_categories = MatchRankCategory::with('matchsingledoubles')->get();
 
-            /*    for mix loop one time */
-            if ($match_single_doubles->id == 'ef0084e6-90cb-4dd0-8c49-5a622d4c5e33') {
-                foreach ($match_categories as  $value) {
+            foreach ($match_categories as $key => $data) {
+
+                /*    for mix loop one time */
+                if($data->match_single_doubles_id=='ef0084e6-90cb-4dd0-8c49-5a622d4c5e33'){
                     $match_ladder = new MatchLadders();
-                    $match_ladder->title =  $value->title . ' ' . $match_single_doubles->title;
+                    $match_ladder->title =  $data->title . ' ' . $data->matchsingledoubles->title;
                     $match_ladder->seasons_id = $season->id;
                     $match_ladder->gender = "MX";
-                    $match_ladder->match_rank_categories_id = $value->id;
+                    $match_ladder->match_rank_categories_id = $data->id;
                     $match_ladder->save();
                 }
-            } else {
-                foreach ($match_categories as  $value) {
+                else{
                     $match_ladder = new MatchLadders();
-                    $match_ladder->title = "Men's " . ' ' . $value->title . ' ' . $match_single_doubles->title;
+                    $match_ladder->title =  "Men's " . ' ' . $data->title . ' ' . $data->matchsingledoubles->title;
                     $match_ladder->seasons_id = $season->id;
                     $match_ladder->gender = "M";
-                    $match_ladder->match_rank_categories_id = $value->id;
+                    $match_ladder->match_rank_categories_id = $data->id;
                     $match_ladder->save();
-                }
-                foreach ($match_categories as $key => $value) {
+
 
                     $match_ladder = new MatchLadders();
-                    $match_ladder->title = "Women's " . ' ' . $value->title . ' ' . $match_single_doubles->title;
+                    $match_ladder->title =  "Women's " . ' ' . $data->title . ' ' . $data->matchsingledoubles->title;
                     $match_ladder->seasons_id = $season->id;
                     $match_ladder->gender = "F";
-                    $match_ladder->match_rank_categories_id = $value->id;
+                    $match_ladder->match_rank_categories_id = $data->id;
                     $match_ladder->save();
                 }
+                
             }
-
             return response(null, 200);
         } else {
             return response(null, 400);
@@ -147,17 +149,21 @@ class SeasonsController extends Controller
         $season = Seasons::findOrFail($id);
         $this->validate($request, [
             'title' => 'required',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
+            'start_date' => 'required|date|before:end_date',
+            'end_date' => 'required|date|after:start_date',
             'registration_deadline' => 'required|date',
             'playoff_date' => 'required|date',
-            'number_of_weeks' => 'required'
+            'playoff_date2' => 'required|date',
+            'number_of_weeks' => 'required',
+            'late_fee' => 'required',
         ]);
         $season->title = $request->title;
         $season->start_date = $request->start_date;
         $season->end_date = $request->end_date;
         $season->registration_deadline = $request->registration_deadline;
         $season->playoff_date = $request->playoff_date;
+        $season->playoff_date2 = $request->playoff_date2;
+        $season->late_fee = $request->late_fee;
         $season->number_of_weeks = $request->number_of_weeks;
         if ($season->save()) {
             return response($season, 200);
@@ -180,5 +186,9 @@ class SeasonsController extends Controller
         } else {
             return response(null, 400);
         }
+    }
+    public function getNextAvailableSeason(){
+        $season = Seasons::orderBy('start_date', 'ASC')->first();
+        return $season;
     }
 }

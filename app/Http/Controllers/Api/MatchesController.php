@@ -106,8 +106,21 @@ class MatchesController extends Controller
             'to' => 'required|exists:users,id',
             'match_ladder' => 'required',
             'match_rank' => 'required',
-            'season_id'=>'required'
+            'season_id'=>'required',
+            'point1_user1' =>'required',
+            'point1_user2' =>'required',
+            'point2_user1' =>'required',
+            'point2_user2' =>'required',
         ]);
+
+        /** calling validation for third user because now user1 have won first set and user2 have won 2nd set */
+
+        if($request->point1_user1 >  $request->point1_user2 && $request->point2_user2 >  $request->point2_user1){
+            $request->validate([
+                'point3_user1' => 'required',
+                'point3_user2' => 'required',
+            ]);
+        }
         /* Logic for implementing user points **/
 
             $season = Seasons::findOrFail($request->season_id);
@@ -120,28 +133,12 @@ class MatchesController extends Controller
 
                 return response(['errors' => ['played_error' => "Played date is not in season start and end dates. Please select date from ".$season_start_date." to ". $season_end_date ]], 422);
             }
-            $period = CarbonPeriod::between($season->start_date, $season->end_date);
-            $days = [];
+          
             $played=$request->played;
-           $start_date= Carbon::create($season->start_date);
-           $end_date = Carbon::create($played);
-           $week = $start_date->diffInDays($end_date)/7;
+            $start_date= (Carbon::create($season->start_date))->subDays(1);
+            $end_date = Carbon::create($played);
+            $week = $start_date->diffInDays($end_date)/7;
             $week_number =  is_float($week) ? ((int)($week)) +1 : (int)($week);
-            // foreach ($period as $key=>$date) {
-            //     // return $key;
-            //     $day = $date->format('m-d');
-            //     $days[] = $day;
-            //     if ($day ===Carbon::parse($request->played)->format('m-d')) {
-            //         // $period->skip(3);
-            //       return  Carbon::parse($request->played)->format('W');
-            //     }
-            // }
-            // return $res;
-            // $dt = Carbon::parse($request->played)->format('W');
-            
-            // // return $dt->weekOfMonth;
-            // $period = CarbonPeriod::create($season->start_date, $season->end_date);
-            // return $period;
         /** check if both have already ranking */
             $user_to_rank = UserMatchesLadderRank::where('user_id', $request->to)->where('match_ladder_id',$request->match_ladder)->first();
             $user_by_rank = UserMatchesLadderRank::where('user_id', $request->by)->where('match_ladder_id',$request->match_ladder)->first();
@@ -154,23 +151,29 @@ class MatchesController extends Controller
             $match->point1_user2 = isset($request->point1_user2) ? $request->point1_user2 : '';
             $match->point2_user2 = isset($request->point2_user2) ? $request->point2_user2 : '';
             $match->point3_user2 = isset($request->point3_user2) ? $request->point3_user2 : '';
-
+            $match->week= $week_number;
             $to_object = UserMatchesRankFactor::where('user_id', $request->to)->where('matches_id',$id)->first();
             $by_object = UserMatchesRankFactor::where('user_id', $request->by)->where('matches_id',$id)->first();
+            if($to_object){
+                $user_to_rank->rank_points = $user_to_rank->rank_points- $to_object->earned_points;
+                $user_to_rank->save();
+                $user_by_rank->rank_points = $user_by_rank->rank_points- $by_object->earned_points;
+                $user_by_rank->save();
+                $by_object->delete();
+            }
             
         if ($user_to_rank && $user_by_rank) {         
             
-            if($to_object){
-                $user_to_rank->rank_points = $user_to_rank->rank_points- $to_object->earned_points;
-                $to_object->delete();
-            }
-            if($by_object){
-                $user_by_rank->rank_points = $user_by_rank->rank_points- $by_object->earned_points;
-                $by_object->delete();
-            }
+            
             /* method for calculating ladder points to both users */
-           
-            $calculatios = $this->calculatePoints($request, $user_by_rank->rank_points, $user_to_rank->rank_points);
+            // return ['1'=>$user_by_rank->rank_points, '2'=>$user_to_rank->rank_points];
+            // if($user_by_rank->rank_points==0){
+            //     $user_by_rank->rank_points = $this->calculateRank($request->match_ladder);
+            // }
+            // if($user_to_rank->rank_points==0){
+            //     $user_to_rank->rank_points = $this->calculateRank($request->match_ladder);
+            // }
+            $calculatios = $this->calculatePoints($request, $user_by_rank->rank_points, $user_to_rank->rank_points, $week_number);
 
             $rankings = false;
             
@@ -185,11 +188,11 @@ class MatchesController extends Controller
                 return response($calculatios, 400);
             }
         } else {
-            /* method for getting initial points of both users */
-            $user_to_rank = $this->calculateRank($request->match_rank);
-            $user_by_rank = $this->calculateRank($request->match_rank);
+            /* method for getting initial base points of both users */
+            $user_to_rank = $this->calculateRank($request->match_ladder);
+            $user_by_rank = $this->calculateRank($request->match_ladder);
 
-            $calculatios =  $this->calculatePoints($request, $user_by_rank, $user_to_rank);
+            $calculatios =  $this->calculatePoints($request, $user_by_rank, $user_to_rank,$week_number);
 
             $rankings = false;
             if($calculatios){
@@ -220,11 +223,11 @@ class MatchesController extends Controller
     /** this method will calculates initial rank of both users */
     public static function calculateRank($rank_id)
     {
-        $count = UserPaidRankings::where('match_rank_categories_id', $rank_id)->count();
+        $count = UserPaidRankings::where('match_ladder_id', $rank_id)->count();
         return $count;
     }
 
-    public static function calculatePoints($data, $user1_rank, $user2_rank)
+    public static function calculatePoints($data, $user1_rank, $user2_rank, $week=1)
     {
         
         $user1_counts = 0;
@@ -262,17 +265,15 @@ class MatchesController extends Controller
 
             // Calculatig winner points according to Algorithem
 
-            
             // Case 1: User 1 (Winner) curent rank < User 2(Loser) Current Rank
 
-            
             // ::FORMULA::   If higher-ranked: 10 plus Difference in games in sets won  :: 
             if ($user1_rank <  $user2_rank) {
                 $user1_rank = 10 + $user1_win_points;
             }
 
             // Case 2: User 1 (Winner) curent rank > User 2(Loser) Current Rank
-            // ::FORMULA::   If lower-ranked: 15 plus ((Difference in points in games won times the Difference in rankings up to 7) divided by 4)  :: 
+            // ::FORMULA::   If lower-ranked: 15 plus ((Difference in points in games won times the Difference in rankings up to 7) divided by 4)  ::
 
             elseif ($user1_rank > $user2_rank) {
                 /* for lower ranks */
@@ -290,6 +291,11 @@ class MatchesController extends Controller
             }
 
             // calculate points for loser (user2)
+            // $user2_rank = 10;
+            // $user2_points = $data->point1_user2 + $data->point2_user2 + $data->point3_user2;
+            // if($user2_points>10){
+            //     $user2_rank = 10;
+            // }
             $user2_rank = $user2_win_points;
             if($user2_rank>12){
                 $user2_rank = 12;
@@ -305,6 +311,7 @@ class MatchesController extends Controller
             $user1_score->earned_points = $user1_rank;
             $user1_score->win_loss_status = '1';
             $user1_score->ladder_id = $data->match_ladder;
+            $user1_score->week = $week;
             $user1_score->save();
 
             $user2_score = new UserMatchesRankFactor;
@@ -313,6 +320,7 @@ class MatchesController extends Controller
             $user2_score->earned_points = $user2_rank;
             $user2_score->win_loss_status = '0';
             $user2_score->ladder_id = $data->match_ladder;
+            $user2_score->week = $week;
             $user2_score->save();
 
             return ['user1'=>$user1_score, 'user2'=>$user2_score];
@@ -331,7 +339,7 @@ class MatchesController extends Controller
             }
 
             // Case 2: User 2 (Winner) curent rank > User 1(Loser) Current Rank
-            // ::FORMULA::   If lower-ranked: 15 plus ((Difference in games in sets won times the Difference in rankings up to 7) divided by 4)  :: 
+            // ::FORMULA::   If lower-ranked: 15 plus ((Difference in points in games won times the Difference in rankings up to 7) divided by 4)  ::
 
             elseif ($user2_rank > $user1_rank) {
                
@@ -348,15 +356,10 @@ class MatchesController extends Controller
 
             elseif ($user1_rank == $user2_rank) {
                 $user2_rank = 15 + $user2_win_points;
+                // return '=  '.$user2_rank;
             }
 
             // calculate points for loser (user1)
-            // $user1_rank = 10;
-            // $user1_points = $data->point1_user1 + $data->point2_user1 + $data->point3_user1;
-            
-            // if($user1_points>10){
-            //     $user1_rank = 10;
-            // }
             $user1_rank = $user1_win_points;
             if($user1_rank>12){
                 $user1_rank = 12;
@@ -372,6 +375,7 @@ class MatchesController extends Controller
             $user1_score->earned_points = $user1_rank;
             $user1_score->win_loss_status = '0';
             $user1_score->ladder_id = $data->match_ladder;
+            $user1_score->week = $week;
             $user1_score->save();
 
 
@@ -381,6 +385,7 @@ class MatchesController extends Controller
             $user2_score->earned_points = $user2_rank;
             $user2_score->win_loss_status = '1';
             $user2_score->ladder_id = $data->match_ladder;
+            $user2_score->week = $week;
             $user2_score->save();
             return ['user1'=>$user1_score, 'user2'=>$user2_score];
         }
@@ -417,14 +422,14 @@ class MatchesController extends Controller
             /**updating already existing rankings   */
             $user1_ladder_ranks = UserMatchesLadderRank::where('user_id', $user1['user_id'])->where('match_ladder_id',$laader_id)->firstOrFail();
             $user1_ladder_ranks->user_id = $user1['user_id'];
-            $user1_ladder_ranks->rank_points = $user1['earned_points'];
+            $user1_ladder_ranks->rank_points =$user1_ladder_ranks->rank_points + $user1['earned_points'];
             $user1_ladder_ranks->week = 8;
             $user1_ladder_ranks->match_ladder_id = $laader_id;
             $user1_ladder_ranks->save();
 
             $user2_ladder_ranks = UserMatchesLadderRank::where('user_id', $user2['user_id'])->where('match_ladder_id',$laader_id)->firstOrFail();
             $user2_ladder_ranks->user_id = $user2['user_id'];
-            $user2_ladder_ranks->rank_points =  $user2['earned_points'];
+            $user2_ladder_ranks->rank_points =  $user2_ladder_ranks->rank_points + $user2['earned_points'];
             $user2_ladder_ranks->week = 8;
             $user2_ladder_ranks->match_ladder_id = $laader_id;
             $user2_ladder_ranks->save();
@@ -433,10 +438,25 @@ class MatchesController extends Controller
 
         } 
     }
-    public function getByRankCategory(Request $request, $id){
-        $requests = Matches::with('request')->whereHas('request', function($data) use ($id){
-            $data->where('category', $id);
-        })->with('request.to')->with('request.by')->get();
+    public function getByLadder(Request $request, $id){
+
+        $query = Matches::query();
+        $query->with('request')->whereHas('request', function($data) use ($id){
+            $data->where('ladder_id', $id);
+        })->with('request.to')->with('request.by');
+
+
+        /** adding filter for searching match */
+        if(isset($request->for)){
+            $query->with('request')->whereHas('request', function($data) use ($request){
+                $data->where('request_to', $request->for)->orWhere('request_by', $request->for);
+            });
+        }
+        if(isset($request->week)){
+            $query->where('week', $request->week);
+        }
+
+        $requests = $query->get();
         if ($requests) {
             foreach ($requests as $key => $value) {
 
@@ -467,16 +487,46 @@ class MatchesController extends Controller
             return $requests;
         }
         return $requests;
-        // $requests = UserMatchesRankFactor::with(['match','user'])->with('match.request')->with('match.request.to')->with('match.request.by')->get();
-        // return $requests;
     }
    public function getUserRankingByLadder(Request $request,$id)
     {
         if($request->filter_week){
-            $requests = UserMatchesLadderRank::orderBy('rank_points', 'DESC')->where('match_ladder_id',$id)->where('week', $request->filter_week)->with('user')->get();
+            $requests = UserMatchesLadderRank::orderBy('rank_points', 'DESC')->where('match_ladder_id',$id)->with('user')->paginate(10);
+           
+            $queryFactors = UserMatchesRankFactor::where('ladder_id', $id)->where('week', $request->filter_week)->get();
+            // return $queryFactors;
+            $i = 0 ; 
+            foreach ($requests as $key => $value) {
+                
+                $user_id = $value->user_id;
+
+               $filteredWinner =  $queryFactors->filter(function ($item) use ($user_id) {
+                    return $item->user_id == $user_id && $item->win_loss_status==1; 
+                })->values();
+                $filteredLosers =  $queryFactors->filter(function ($item) use ($user_id) {
+                    return $item->user_id == $user_id && $item->win_loss_status==0; 
+                })->values();
+
+                $winerPoints = $filteredWinner->sum('earned_points');
+                $loserPoints = $filteredLosers->sum('earned_points');
+               
+                if(isset($requests[$key]->earned_points) && isset($requests[$key+1]->earned_points) && $requests[$key]->earned_points == $requests[$key+1]->earned_points){
+                    $i;
+                } else{
+                    $i++;
+                }
+
+
+               /** as we have calculated points above now we have to patch them with obj */
+               $value['WP'] = $winerPoints;
+               $value['LP'] = $loserPoints;
+               $value['rank'] = $i;
+
+            }
+
             return $requests;
         } else{
-            $requests = UserMatchesLadderRank::orderBy('rank_points', 'DESC')->where('match_ladder_id',$id)->with('user')->get();
+            $requests = UserMatchesLadderRank::orderBy('rank_points', 'DESC')->where('match_ladder_id',$id)->with('user')->paginate(10);
             
             $queryFactors = UserMatchesRankFactor::where('ladder_id', $id)->get();
             // return $queryFactors;
@@ -510,10 +560,5 @@ class MatchesController extends Controller
             }
             return $requests;
         }      
-    }
-    public function filtertByRankCategory(Request $request)
-    {
-        // $query = User::query();
-        // $authors = $query->get();
     }
 }

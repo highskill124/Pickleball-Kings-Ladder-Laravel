@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\UserPaidRankings;
 use Illuminate\Http\Request;
 
 class UserPaidRankingsController extends Controller
@@ -46,6 +47,8 @@ class UserPaidRankingsController extends Controller
      */
     public function show($id)
     {
+        $paids = UserPaidRankings::where('id', $id)->with('matchladder')->first();
+        return $paids;
         //
     }
 
@@ -58,6 +61,8 @@ class UserPaidRankingsController extends Controller
     public function edit($id)
     {
         //
+        $paids = UserPaidRankings::where('id', $id)->with('matchladder')->first();
+        return $paids;
     }
 
     /**
@@ -81,5 +86,9 @@ class UserPaidRankingsController extends Controller
     public function destroy($id)
     {
         //
+    }
+    public function getPaidByUser($id){
+        $paids = UserPaidRankings::where('user_id', $id)->with('matchladder')->get();
+        return $paids;
     }
 }

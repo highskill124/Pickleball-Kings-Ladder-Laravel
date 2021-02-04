@@ -18,7 +18,8 @@ class CreateRequestsTable extends Migration
         Schema::create('requests', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('type');
-            $table->string('category');
+            $table->uuid('ladder_id');
+            $table->uuid('rank_category_id');
             $table->uuid('request_to')->index()->nullable();
             $table->uuid('request_by')->index();
             $table->uuid('matches_id')->index()->nullable();
@@ -30,6 +31,8 @@ class CreateRequestsTable extends Migration
             $table->foreign('request_by')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('request_to')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('matches_id')->references('id')->on('matches')->onDelete('cascade');
+            $table->foreign('ladder_id')->references('id')->on('match_ladders')->onDelete('cascade');
+            $table->foreign('rank_category_id')->references('id')->on('match_rank_categories')->onDelete('cascade');
         });
       }
     }

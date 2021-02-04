@@ -18,9 +18,9 @@ class CreateUserPaidRankingsTable extends Migration
         Schema::create('user_paid_rankings', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('user_id')->index();
-            $table->uuid('match_rank_categories_id')->index()->nullable();
+            $table->uuid('match_ladder_id')->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('match_rank_categories_id')->references('id')->on('match_rank_categories')->onDelete('cascade');
+            $table->foreign('match_ladder_id')->references('id')->on('match_ladders')->onDelete('cascade');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->default(DB::raw('NULL ON UPDATE CURRENT_TIMESTAMP'))->nullable();
         });

@@ -19,8 +19,8 @@ class UserPaidRankings extends Model
     {
         return $this->belongsTo(User::class,'user_id');
     }
-    public function MatchRankCategories()
+    public function MatchLadder()
     {
-        return $this->belongsTo(MatchRankCategory::class,'match_rank_categories_id');
+        return $this->belongsTo(MatchLadders::class,'match_ladder_id');
     }
 }

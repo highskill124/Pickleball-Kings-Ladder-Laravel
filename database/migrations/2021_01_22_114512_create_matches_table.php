@@ -26,6 +26,7 @@ class CreateMatchesTable extends Migration
             $table->integer('point2_user2')->nullable();
             $table->integer('point3_user1')->nullable();
             $table->integer('point3_user2')->nullable();
+            $table->integer('week')->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->default(DB::raw('NULL ON UPDATE CURRENT_TIMESTAMP'))->nullable();
             $table->foreign('requests_id')->references('id')->on('requests')->onDelete('cascade');

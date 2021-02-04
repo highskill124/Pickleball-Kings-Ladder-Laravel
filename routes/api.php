@@ -41,14 +41,25 @@ Route::apiResource('matches-ladder', 'App\Http\Controllers\Api\MatchLaddersContr
 Route::get('matches-ladder-by-season/{id?}', 'App\Http\Controllers\Api\MatchLaddersController@getBySeason');
 Route::get('paid-user-in-ladder/{id?}', 'App\Http\Controllers\Api\UsersController@getPaidUserInLadder');
 
-Route::get('request-by-rank-category/{id?}', 'App\Http\Controllers\Api\RequestsController@getByRankCategory');
+Route::post('request-by-ladder/{id?}', 'App\Http\Controllers\Api\RequestsController@getByLadder');
+Route::get('request-by-ladder/{id?}', 'App\Http\Controllers\Api\RequestsController@getByLadder');
 
-Route::post('filter-matches-by-rank-category', 'App\Http\Controllers\Api\MatchesController@filtertByRankCategory');
 
-Route::get('request-matches-by-rank-category/{id?}', 'App\Http\Controllers\Api\MatchesController@getByRankCategory');
+
+Route::post('request-matches-by-ladder/{id?}', 'App\Http\Controllers\Api\MatchesController@getByLadder');
+Route::get('request-matches-by-ladder/{id?}', 'App\Http\Controllers\Api\MatchesController@getByLadder');
 
 Route::post('matches-ladder-user-ranking/{id?}', 'App\Http\Controllers\Api\MatchesController@getUserRankingByLadder');
 Route::get('matches-ladder-user-ranking/{id?}', 'App\Http\Controllers\Api\MatchesController@getUserRankingByLadder');
 
+Route::get('get-next-available-season', 'App\Http\Controllers\Api\SeasonsController@getNextAvailableSeason');
 
+Route::get('get-paypal-history', 'App\Http\Controllers\Api\UsersController@getPaymenthistory');
+
+Route::post('user/admin-update-password/{id?}', 'App\Http\Controllers\Api\UsersController@adminUpdatePassword')->name('update-password');
+
+Route::post('user/admin-update-season/{id?}', 'App\Http\Controllers\Api\UsersController@adminUpdateSeason')->name('update-season');
+Route::get('user-paid-in-ladders/{id?}', 'App\Http\Controllers\Api\UserPaidRankingsController@getPaidByUser');
+
+Route::apiResource('user-paid-rankings', 'App\Http\Controllers\Api\UserPaidRankingsController');
 Auth::routes(['verify' => true]);

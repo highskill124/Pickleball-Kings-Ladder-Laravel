@@ -23,6 +23,8 @@ class CreateSeasonsTable extends Migration
             $table->timestamp('end_date');
             $table->timestamp('registration_deadline');
             $table->timestamp('playoff_date');
+            $table->timestamp('playoff_date2');
+            $table->integer('late_fee')->nullable();
             $table->uuid('match_single_doubles_id')->index();
             $table->foreign('match_single_doubles_id')->references('id')->on('match_single_doubles')->onDelete('cascade');
             $table->timestamp('created_at')->useCurrent();

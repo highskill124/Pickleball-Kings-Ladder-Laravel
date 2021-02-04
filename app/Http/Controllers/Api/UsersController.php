@@ -3,15 +3,21 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\adminChangeUserPassword;
+use App\Mail\adminChangeUserSeason;
+use App\Mail\adminDeleteUser;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use App\Mail\ForgetPasswordEmail;
-use App\Models\Categories;
+use App\Models\MatchLadders;
 use App\Models\UserPaidRankings;
+use Exception;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
+use PayPal\Api\Payment as Payments;
+
 
 class UsersController extends Controller
 {
@@ -103,8 +109,9 @@ class UsersController extends Controller
             $request->validate([
                 'singles' => 'required|exists:match_rank_categories,id',
             ]);
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['singles'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
             $paid_rankings = new UserPaidRankings();
-            $paid_rankings->match_rank_categories_id = $input_data['singles'];
+            $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
@@ -112,8 +119,9 @@ class UsersController extends Controller
             $request->validate([
                 'additional_singles' => 'required|exists:match_rank_categories,id',
             ]);
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['additional_singles'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
             $paid_rankings = new UserPaidRankings();
-            $paid_rankings->match_rank_categories_id = $input_data['additional_singles'];
+            $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
@@ -121,8 +129,10 @@ class UsersController extends Controller
             $request->validate([
                 'doubles' => 'required|exists:match_rank_categories,id',
             ]);
+
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['doubles'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
             $paid_rankings = new UserPaidRankings();
-            $paid_rankings->match_rank_categories_id = $input_data['doubles'];
+            $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
@@ -130,8 +140,9 @@ class UsersController extends Controller
             $request->validate([
                 'double_partner' => 'required|exists:match_rank_categories,id',
             ]);
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['double_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
             $paid_rankings = new UserPaidRankings();
-            $paid_rankings->match_rank_categories_id = $input_data['double_partner'];
+            $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
@@ -139,8 +150,9 @@ class UsersController extends Controller
             $request->validate([
                 'double_second_partner' => 'required|exists:match_rank_categories,id',
             ]);
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['double_second_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
             $paid_rankings = new UserPaidRankings();
-            $paid_rankings->match_rank_categories_id = $input_data['double_second_partner'];
+            $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
@@ -148,8 +160,10 @@ class UsersController extends Controller
             $request->validate([
                 'additional_doubles' => 'required|exists:match_rank_categories,id',
             ]);
+
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['additional_doubles'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
             $paid_rankings = new UserPaidRankings();
-            $paid_rankings->match_rank_categories_id = $input_data['additional_doubles'];
+            $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
@@ -157,8 +171,10 @@ class UsersController extends Controller
             $request->validate([
                 'additional_double_partner' => 'required|exists:match_rank_categories,id',
             ]);
+
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['additional_double_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
             $paid_rankings = new UserPaidRankings();
-            $paid_rankings->match_rank_categories_id = $input_data['additional_double_partner'];
+            $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
@@ -166,8 +182,11 @@ class UsersController extends Controller
             $request->validate([
                 'additional_double_second_partner' => 'required|exists:match_rank_categories,id',
             ]);
+
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['additional_double_second_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+
             $paid_rankings = new UserPaidRankings();
-            $paid_rankings->match_rank_categories_id = $input_data['additional_double_second_partner'];
+            $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
@@ -175,8 +194,12 @@ class UsersController extends Controller
             $request->validate([
                 'mixed_doubles' => 'required|exists:match_rank_categories,id',
             ]);
+
+
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['mixed_doubles'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+
             $paid_rankings = new UserPaidRankings();
-            $paid_rankings->match_rank_categories_id = $input_data['mixed_doubles'];
+            $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
@@ -184,8 +207,11 @@ class UsersController extends Controller
             $request->validate([
                 'mixed_doubles_partner' => 'required|exists:match_rank_categories,id',
             ]);
+
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['mixed_doubles_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+
             $paid_rankings = new UserPaidRankings();
-            $paid_rankings->match_rank_categories_id = $input_data['mixed_doubles_partner'];
+            $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
@@ -193,8 +219,10 @@ class UsersController extends Controller
             $request->validate([
                 'mixed_doubles_second_partner' => 'required|exists:match_rank_categories,id',
             ]);
+
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['mixed_doubles_second_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
             $paid_rankings = new UserPaidRankings();
-            $paid_rankings->match_rank_categories_id = $input_data['mixed_doubles_second_partner'];
+            $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
@@ -202,8 +230,10 @@ class UsersController extends Controller
             $request->validate([
                 'additional_mixed_doubles' => 'required|exists:match_rank_categories,id',
             ]);
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['additional_mixed_doubles'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+
             $paid_rankings = new UserPaidRankings();
-            $paid_rankings->match_rank_categories_id = $input_data['additional_mixed_doubles'];
+            $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
@@ -211,8 +241,11 @@ class UsersController extends Controller
             $request->validate([
                 'additional_mixed_doubles_partner' => 'required|exists:match_rank_categories,id',
             ]);
+
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['additional_mixed_doubles_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+
             $paid_rankings = new UserPaidRankings();
-            $paid_rankings->match_rank_categories_id = $input_data['additional_mixed_doubles_partner'];
+            $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
@@ -220,8 +253,11 @@ class UsersController extends Controller
             $request->validate([
                 'additional_mixed_doubles_second_partner' => 'required|exists:match_rank_categories,id',
             ]);
+
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['additional_mixed_doubles_second_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+
             $paid_rankings = new UserPaidRankings();
-            $paid_rankings->match_rank_categories_id = $input_data['additional_mixed_doubles_second_partner'];
+            $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
@@ -298,8 +334,17 @@ class UsersController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $delete_entry = User::findOrFail($id);
+        $user = $delete_entry;
+        if ($delete_entry->delete()) {
+            Mail::to('muzaffar.munir@nextscrum.dev')->send(new adminDeleteUser($user));
+            return response(null, 200);
+        } else {
+            return response(null, 400);
+        }
     }
+                        /** CTA for verify email*/
+
     public function emailVerified(Request $request, $uid, $id)
     {
         $user = User::findOrFail($uid);
@@ -307,6 +352,8 @@ class UsersController extends Controller
         $user->save();
         return  redirect()->away('/');
     }
+                    /** CTA for sending reset email */
+
     public function passwordResetEmail(Request $request)
     {
         $user = User::where('email', '=', $request->email)->first();
@@ -324,6 +371,29 @@ class UsersController extends Controller
             return response(['message' => ['errors' => ['email' => "We can't find a user with that email address."]]], 422);
         }
     }
+
+
+                /** CTA for update user password by admin*/
+
+    public function  adminUpdatePassword(Request $request, $id){
+        $user = User::findOrFail($id);
+        $this->validate($request, [
+            'new_password' => 'required|max:50|min:3|different:current_password',
+            'confirm_password' => 'required|string|max:50|min:3|same:new_password',
+        ]);
+        if($user->fill([
+            'password' => Hash::make($request->new_password)
+        ])->save()){
+            Mail::to('muzaffar.munir@nextscrum.dev')->send(new adminChangeUserPassword($user));
+            return response(null, 200);
+        } else {
+            return response(null, 400);
+        }
+    }
+
+
+            /** CTA for update forget password given instructions in email token */
+
     public function UpdatePassword(Request $request, $id){
         $user = User::findOrFail($id);
         $this->validate($request, [
@@ -345,6 +415,8 @@ class UsersController extends Controller
             return response(null, 400);
         }
     }
+
+            /** CTA for updating forget password */
     public function updateForgetPassword(Request $request)
     {
 
@@ -370,20 +442,64 @@ class UsersController extends Controller
             return response(null, 406);
         }
     }
+
+        /** CTA for getting paid user by id */
+
     public function withCategories($id){
-        $categories = UserPaidRankings::where('user_id',$id)->with('matchrankcategories')->get();
+        $categories = UserPaidRankings::where('user_id',$id)->get();
         return $categories;
     }
+
+    /** CTA for getting paid users in a ladder */
+
     public function getPaidUserInLadder(Request $request, $id){
+        
+        $query = UserPaidRankings::query();
         if(isset($_GET['with_current'])){
-            $users = UserPaidRankings::with('user')->whereHas('user', function($user){
-                $user->where('gender','=',$_GET['gender']); })->where('match_rank_categories_id', $id)->get();
+            $query->with('user')->whereHas('user', function($user){
+                $user->where('gender','=',$_GET['gender']); })->where('match_ladder_id', $id);
 
         } else{
-            $users = UserPaidRankings::with('user')->whereHas('user', function($user){
-                $user->where('gender','=',$_GET['gender']); })->where('user_id','!=',auth()->user()->id)->where('match_rank_categories_id', $id)->get();
+            $query->with('user')->whereHas('user', function($user){
+                $user->where('gender','=',$_GET['gender']); })->where('match_ladder_id', $id)->where('user_id','!=',auth()->user()->id);
         }
+       $users = $query->get();
        
         return $users;
+    }
+
+    /** CTA for updating user season from admin */
+
+    public function adminUpdateSeason(Request $request,$id){
+        $this->validate($request, [
+            'id' => 'required',
+            'rank_category' => 'required',
+            'season_id' => 'required',
+        ]);
+        $paid_rank = UserPaidRankings::findOrFail($id);
+        $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$request['rank_category'])->where('seasons_id', $request->season_id)->first();
+        $paid_rank->match_ladder_id = $ladder->id;
+        if ($paid_rank->save()) {
+            $user = User::findOrFail($paid_rank->user_id);
+            Mail::to('muzaffar.munir@nextscrum.dev')->send(new adminChangeUserSeason($user));
+            return response(null, 200);
+        } else {
+            return response(null, 400);
+        }
+
+    }
+
+/** CTA for getting users payment history from admin */
+
+    public function getPaymenthistory(){
+        try {
+            $params = array('count' => 10, 'start_index' => 5);
+        
+            $payments = Payments::all($params, $apiContext);
+        } catch (Exception $ex) {
+            // NOTE: PLEASE DO NOT USE RESULTPRINTER CLASS IN YOUR ORIGINAL CODE. FOR SAMPLE ONLY
+           return ["List Payments", "Payment", null, $params, $ex];
+            exit(1);
+        }
     }
 }

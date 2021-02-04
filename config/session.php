@@ -155,7 +155,7 @@ return [
     |
     */
 
-    'domain' => env('SESSION_DOMAIN', ".kings.com,kings.nextscrum.dev, pickleball-kings.nextscrum.dev"),
+    'domain' => env('SESSION_DOMAIN', ".kings.com,kings.nextscrum.dev, kingspickleballladder.com"),
 
     /*
     |--------------------------------------------------------------------------

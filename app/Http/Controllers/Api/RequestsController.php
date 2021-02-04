@@ -7,6 +7,7 @@ use App\Mail\purposeAllEmail;
 use App\Mail\purposeMail;
 use App\Models\Matches;
 use App\Models\Requests;
+use App\Models\Seasons;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -78,14 +79,28 @@ class RequestsController extends Controller
             ]);
         }
         $this->validate($request, [
+            'ladder'=>'required',
             'category'=>'required',
             'type' => 'required|',
             'request_by'=>'required|exists:users,id',
             'location'=>'required',
             'time'=>'required|date',
+            'season_id'=>'required',
         ]);
+
+        $season = Seasons::findOrFail($request->season_id);
+        $res = Carbon::create($request->time)->between($season->start_date, $season->end_date);
+        if(!$res){
+            $season_start_date =  Carbon::parse($season->start_date)->format('M d, Y');
+            // $season_start_time = date("h.i A", strtotime($season->start_date));
+            $season_end_date =  Carbon::parse($season->end_date)->format('M d, Y');
+            // $season_end_time = date("h.i A", strtotime($season->end_date));
+
+            return response(['errors' => ['time_error' => "Played date is not in season start and end dates. Please select date from ".$season_start_date." to ". $season_end_date ]], 422);
+        }
         $requests = new Requests;
-        $requests->category = $request->category;
+        $requests->ladder_id = $request->ladder;
+        $requests->rank_category_id = $request->category;
         $requests->type = $request->type;
         if(isset($request->challenge_to)){
             $requests->request_to = isset($request->challenge_to) ? $request->challenge_to:'';
@@ -154,6 +169,7 @@ class RequestsController extends Controller
     }
     public function purposeAll(Request $request){
         $this->validate($request, [
+            'ladder'=>'required',
             'category'=>'required',
             'type' => 'required|',
             'request_by'=>'required|exists:users,id',
@@ -168,7 +184,8 @@ class RequestsController extends Controller
         }
         // Mail::to('muzaffar.munir@nextscrum.dev')->send(new purposeAllEmail($user));
         $requests = new Requests;
-        $requests->category = $request->category;
+        $requests->ladder_id = $request->ladder;
+        $requests->rank_category_id = $request->category;
         $requests->type = $request->type;
         $requests->status = 'emailed';
         $requests->request_by = $request->request_by;
@@ -210,8 +227,21 @@ class RequestsController extends Controller
             return response(null, 400);
         }
     }
-    public function getByRankCategory($id){
-        $requests = Requests::where('type',$_GET['type'])->where('category',$id)->with('to')->with('by')->with('match')->get();
+    public function getByLadder(Request $request,$id){
+        $query = Requests::query();
+        $query->where('type',$_GET['type'])->where('ladder_id',$id)->with('to')->with('by')->with('match');
+        
+        if(isset($request->by)){
+            $query->where('request_by',$request->by);
+        }
+        if(isset($request->to)){
+            $query->where('request_to',$request->to);
+        }
+        if(isset($request->pending_only) && $request->pending_only){
+            $query->where('status','pending');
+        }
+        $requests = $query->get();
+        // $requests = Requests::where('type',$_GET['type'])->where('ladder_id',$id)->with('to')->with('by')->with('match')->get();
         if($requests){
             foreach ($requests as $key => $value) {
                 # code...

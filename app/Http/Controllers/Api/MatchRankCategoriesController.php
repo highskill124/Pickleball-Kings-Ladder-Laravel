@@ -16,7 +16,7 @@ class MatchRankCategoriesController extends Controller
     public function index()
     {
         //
-        $rankings = MatchRankCategory::all();
+        $rankings = MatchRankCategory::with('matchsingledoubles')->get();
         return $rankings;
     }
 
