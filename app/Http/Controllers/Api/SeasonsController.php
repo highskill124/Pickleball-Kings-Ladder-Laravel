@@ -27,10 +27,18 @@ class SeasonsController extends Controller
         $seasons = Seasons::orderBy('start_date', 'ASC')->get();
         if ($seasons) {
             foreach ($seasons as $key => $value) {
-                $value['start_date'] = Carbon::parse($value['start_date'])->format('M d, Y');
-                $value['end_date'] = Carbon::parse($value['end_date'])->format('M d, Y');
-                $value['registration_deadline'] = Carbon::parse($value['registration_deadline'])->format('M d, Y');
-                $value['playoff_date'] = Carbon::parse($value['playoff_date'])->format('M d, Y');
+                if(isset($value['start_date']) && $value['start_date']){
+                    $value['start_date'] = Carbon::parse($value['start_date'])->format('M d, Y');
+                }
+                if(isset($value['end_date']) && $value['end_date']){
+                    $value['end_date'] = Carbon::parse($value['end_date'])->format('M d, Y');
+                }
+                if(isset($value['registration_deadline']) && $value['registration_deadline']){
+                    $value['registration_deadline'] = Carbon::parse($value['registration_deadline'])->format('M d, Y');
+                }
+                if(isset($value['playoff_date']) && $value['playoff_date']){
+                    $value['playoff_date'] = Carbon::parse($value['playoff_date'])->format('M d, Y');
+                }
             }
         }
         return $seasons;
@@ -58,20 +66,29 @@ class SeasonsController extends Controller
         $this->validate($request, [
             'title' => 'required',
             'match_single_doubles_id' => 'required|exists:match_single_doubles,id',
-            'start_date' => 'required|date|unique:social_links,type',
-            'end_date' => 'required|date',
-            'registration_deadline' => 'required|date',
-            'playoff_date' => 'required|date',
+            'dates_not_decided'=> 'required',
             'number_of_weeks'=>'required',
             'late_fee' =>'required'
         ]);
         $season = new Seasons;
+
+        if($request->dates_not_decided != 1 || $request->dates_not_decided != true || $request->dates_not_decided != 'true'){
+            $this->validate($request, [
+            'start_date' => 'required|date|before:end_date',
+            'end_date' => 'required|date|after:start_date',
+            'registration_deadline' => 'required|date|before:start_date',
+            'playoff_date' => 'required|date',
+            'playoff_date2' => 'required|date',
+            ]);
+            $season->start_date = $request->start_date;
+            $season->end_date = $request->end_date;
+            $season->registration_deadline = $request->registration_deadline;
+            $season->playoff_date = $request->playoff_date;
+            $season->playoff_date2 = $request->playoff_date2;
+        }       
         $season->title = $request->title;
-        $season->match_single_doubles_id = $request->match_single_doubles_id;
-        $season->start_date = $request->start_date;
-        $season->end_date = $request->end_date;
-        $season->registration_deadline = $request->registration_deadline;
-        $season->playoff_date = $request->playoff_date;
+        $season->match_single_doubles_id = $request->match_single_doubles_id;     
+        $season->dates_not_decided = $request->dates_not_decided;
         $season->number_of_weeks = $request->number_of_weeks;
         $season->late_fee = $request->late_fee;
         if ($season->save()) {
@@ -147,22 +164,29 @@ class SeasonsController extends Controller
     {
         //
         $season = Seasons::findOrFail($id);
+
         $this->validate($request, [
             'title' => 'required',
+            'dates_not_decided'=>'required',
+            'number_of_weeks' => 'required',
+            'late_fee' => 'required',
+        ]);
+        if($request->dates_not_decided != 1 || $request->dates_not_decided != true || $request->dates_not_decided != 'true'){
+            $this->validate($request, [
             'start_date' => 'required|date|before:end_date',
             'end_date' => 'required|date|after:start_date',
             'registration_deadline' => 'required|date',
             'playoff_date' => 'required|date',
             'playoff_date2' => 'required|date',
-            'number_of_weeks' => 'required',
-            'late_fee' => 'required',
-        ]);
+            ]);
+            $season->start_date = $request->start_date;
+            $season->end_date = $request->end_date;
+            $season->registration_deadline = $request->registration_deadline;
+            $season->playoff_date = $request->playoff_date;
+            $season->playoff_date2 = $request->playoff_date2;
+        }
         $season->title = $request->title;
-        $season->start_date = $request->start_date;
-        $season->end_date = $request->end_date;
-        $season->registration_deadline = $request->registration_deadline;
-        $season->playoff_date = $request->playoff_date;
-        $season->playoff_date2 = $request->playoff_date2;
+        $season->dates_not_decided = $request->dates_not_decided;
         $season->late_fee = $request->late_fee;
         $season->number_of_weeks = $request->number_of_weeks;
         if ($season->save()) {

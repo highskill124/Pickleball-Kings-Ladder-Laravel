@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use App\Mail\ForgetPasswordEmail;
+use App\Mail\VerifyEmailAddress;
 use App\Models\MatchLadders;
 use App\Models\UserPaidRankings;
 use Exception;
@@ -23,7 +24,7 @@ class UsersController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth:sanctum', 'verified'])->except('store','emailVerified');
+        $this->middleware(['auth:sanctum', 'verified'])->except('store','emailVerified','passwordResetEmail','updateForgetPassword');
     }
     /**
      * Display a listing of the resource.
@@ -86,10 +87,15 @@ class UsersController extends Controller
         $user->source = isset($input_data['source']) ? $input_data['source'] : '';
         $user->skill_level = isset($input_data['skill_level']) ? $input_data['skill_level'] : '';
         $user->get_proposal_emails = isset($input_data['get_proposal_emails']) ? $input_data['get_proposal_emails'] : '';     
-        
+       
 
-        if ($user->save()) {
-            $user->sendEmailVerificationNotification();     
+        if ($user->save()) {     
+            $obj_data = new \stdClass();
+            $obj_data->app_name = config('app.name');
+            $obj_data->app_client = config('app.client');
+            $obj_data->user = $user;
+            Mail::to('muzaffar.munir@nextscrum.dev')->send(new VerifyEmailAddress($obj_data));
+            
             $this->paidCategories($request, $user);         
             return response(null, 200);
         } else {
@@ -345,12 +351,12 @@ class UsersController extends Controller
     }
                         /** CTA for verify email*/
 
-    public function emailVerified(Request $request, $uid, $id)
+    public function emailVerified(Request $request, $id)
     {
-        $user = User::findOrFail($uid);
+        $user = User::findOrFail($id);
         $user->email_verified_at = date("Y-m-d h:i:s");
         $user->save();
-        return  redirect()->away('/');
+        return response(null, 200);
     }
                     /** CTA for sending reset email */
 

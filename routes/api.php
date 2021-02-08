@@ -23,7 +23,7 @@ Route::middleware(['auth:sanctum','verified'])->get('/user', function (Request $
 });
 Route::middleware('auth:sanctum')->get('/user-with-categories/{id?}',  'App\Http\Controllers\Api\UsersController@withCategories');
 Route::apiResource('users', 'App\Http\Controllers\Api\UsersController');
-Route::get('email/verify/{id}/{uid}', 'App\Http\Controllers\Api\UsersController@emailVerified');
+Route::get('email/verify/{id}', 'App\Http\Controllers\Api\UsersController@emailVerified');
 Route::post('user/password-reset-email', 'App\Http\Controllers\Api\UsersController@passwordResetEmail')->name('forget-password-email');
 Route::post('user/reset-password', 'App\Http\Controllers\Api\UsersController@updateForgetPassword')->name('forget-password');
 Route::post('user/update-password/{id?}', 'App\Http\Controllers\Api\UsersController@UpdatePassword')->name('update-password');

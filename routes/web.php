@@ -23,5 +23,7 @@ Route::middleware('auth')->get('/user', function (Request $request) {
 });
 // Auth::routes();
 Auth::routes(['verify' => true]);
-
+Route::get('/{any?}', function () {
+    return view('welcome');
+})->where('any', '^(?!api\/)[\/\w\.\,-]*');
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
