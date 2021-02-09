@@ -10,7 +10,7 @@ class SocialLinksController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth:sanctum', 'verified'])->except('index');
+        $this->middleware(['auth:sanctum', 'verified'])->except('index', 'getByType');
     }
     /**
      * Display a listing of the resource.
@@ -121,5 +121,10 @@ class SocialLinksController extends Controller
         } else {
             return response(null, 400);
         }
+    }
+
+    public function getByType(Request $request){
+        $data = SocialLinks::select('id', 'type','url')->where('type', $request->type)->first();
+        return $data;
     }
 }

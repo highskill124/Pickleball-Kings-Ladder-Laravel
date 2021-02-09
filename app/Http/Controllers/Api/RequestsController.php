@@ -9,6 +9,7 @@ use App\Models\Matches;
 use App\Models\Requests;
 use App\Models\Seasons;
 use App\Models\User;
+use App\Models\UserPaidRankings;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -175,14 +176,16 @@ class RequestsController extends Controller
             'request_by'=>'required|exists:users,id',
         ]);
         $user = User::findOrFail($request->request_by);
-        $users = User::where('id','!=', $user->id)->get();
-        if($user && $users){
+        $users = UserPaidRankings::with('user')->whereHas('user', function($user) use($request){
+            $user->where('gender','=',$request->gender)->where('get_proposal_emails', '1'); 
+        })->where('match_ladder_id', $request->ladder)->where('user_id','!=',auth()->user()->id)->get();
+        if($users){
             foreach ($users as $key => $value) {
+                // $value->user->email;
                 Mail::to('muzaffar.munir@nextscrum.dev')->send(new purposeAllEmail($user));
                 # code...
             }
-        }
-        // Mail::to('muzaffar.munir@nextscrum.dev')->send(new purposeAllEmail($user));
+        }     
         $requests = new Requests;
         $requests->ladder_id = $request->ladder;
         $requests->rank_category_id = $request->category;
