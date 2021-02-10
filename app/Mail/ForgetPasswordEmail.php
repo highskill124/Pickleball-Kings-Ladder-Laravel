@@ -29,7 +29,7 @@ class ForgetPasswordEmail extends Mailable
      */
     public function build()
     {
-        return $this->from('muzafarmunir@gmail.com')
+        return $this->from('kingstennisnotify@gmail.com')
         ->view('mails.resetPassword');
     }
 }

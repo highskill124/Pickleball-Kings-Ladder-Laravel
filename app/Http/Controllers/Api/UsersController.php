@@ -94,7 +94,7 @@ class UsersController extends Controller
             $obj_data->app_name = config('app.name');
             $obj_data->app_client = config('app.client');
             $obj_data->user = $user;
-            Mail::to('muzaffar.munir@nextscrum.dev')->send(new VerifyEmailAddress($obj_data));
+            Mail::to('kingstennisnotify@gmail.com')->send(new VerifyEmailAddress($obj_data));
             
             $this->paidCategories($request, $user);         
             return response(null, 200);
@@ -343,7 +343,7 @@ class UsersController extends Controller
         $delete_entry = User::findOrFail($id);
         $user = $delete_entry;
         if ($delete_entry->delete()) {
-            Mail::to('muzaffar.munir@nextscrum.dev')->send(new adminDeleteUser($user));
+            Mail::to('kingstennisnotify@gmail.com')->send(new adminDeleteUser($user));
             return response(null, 200);
         } else {
             return response(null, 400);
@@ -390,7 +390,7 @@ class UsersController extends Controller
         if($user->fill([
             'password' => Hash::make($request->new_password)
         ])->save()){
-            Mail::to('muzaffar.munir@nextscrum.dev')->send(new adminChangeUserPassword($user));
+            Mail::to('kingstennisnotify@gmail.com')->send(new adminChangeUserPassword($user));
             return response(null, 200);
         } else {
             return response(null, 400);
@@ -487,7 +487,7 @@ class UsersController extends Controller
         $paid_rank->match_ladder_id = $ladder->id;
         if ($paid_rank->save()) {
             $user = User::findOrFail($paid_rank->user_id);
-            Mail::to('muzaffar.munir@nextscrum.dev')->send(new adminChangeUserSeason($user));
+            Mail::to('kingstennisnotify@gmail.com')->send(new adminChangeUserSeason($user));
             return response(null, 200);
         } else {
             return response(null, 400);

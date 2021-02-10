@@ -29,7 +29,7 @@ class VerifyEmailAddress extends Mailable
      */
     public function build()
     {
-        return $this->from('muzaffar.munir@nextscrum.dev')
+        return $this->from('kingstennisnotify@gmail.com')
         ->view('mails.verifyEmail');
     }
 }
