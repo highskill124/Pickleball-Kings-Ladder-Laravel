@@ -29,7 +29,7 @@ class VerifyEmailAddress extends Mailable
      */
     public function build()
     {
-        return $this->from('kingstennisnotify@gmail.com')
+        return $this->from(config('mail.from.address'))
         ->view('mails.verifyEmail');
     }
 }

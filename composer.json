@@ -12,6 +12,8 @@
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",
         "goldspecdigital/laravel-eloquent-uuid": "^8.0",
+        "s-ichikawa/laravel-sendgrid-driver": "^3.0",
+        "intervention/image": "^2.5",
         "guzzlehttp/guzzle": "^7.0.1",
         "laravel/framework": "^8.12",
         "laravel/sanctum": "^2.8",

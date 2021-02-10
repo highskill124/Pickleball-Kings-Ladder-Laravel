@@ -18,7 +18,7 @@ use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use PayPal\Api\Payment as Payments;
-
+use Image;
 
 class UsersController extends Controller
 {
@@ -94,8 +94,28 @@ class UsersController extends Controller
             $obj_data->app_name = config('app.name');
             $obj_data->app_client = config('app.client');
             $obj_data->user = $user;
-            Mail::to('kingstennisnotify@gmail.com')->send(new VerifyEmailAddress($obj_data));
-            
+            Mail::to($user->email)->send(new VerifyEmailAddress($obj_data));
+            if ($request->has('profile_picture') &&  $request->profile_picture != null) {
+                $uploadFileName = $user->id . "_" . $request->profile_picture->getClientOriginalName();
+
+                //checking and creating directory 
+                if (!file_exists(public_path('images/users'))) {
+                    mkdir(public_path('images/users'), 0755, true);
+                }
+                $image = $request->file('profile_picture');
+                $input['imagename'] = $uploadFileName;
+             
+                $destinationPath = public_path('/images/users');
+                // $img = Image::make($image->getRealPath());
+                
+                // $img->resize(500, 500)->save($destinationPath . '/' . $input['imagename']);
+           
+                // $destinationPath = public_path('/images');
+                // $image->move($destinationPath, $input['imagename']);
+                $request->profile_picture->move(public_path('images/users'), $uploadFileName);
+                $user->profile_picture = $uploadFileName;
+                $user->save();
+            }
             $this->paidCategories($request, $user);         
             return response(null, 200);
         } else {
@@ -343,7 +363,7 @@ class UsersController extends Controller
         $delete_entry = User::findOrFail($id);
         $user = $delete_entry;
         if ($delete_entry->delete()) {
-            Mail::to('kingstennisnotify@gmail.com')->send(new adminDeleteUser($user));
+            Mail::to($user->email)->send(new adminDeleteUser($user));
             return response(null, 200);
         } else {
             return response(null, 400);
@@ -372,7 +392,7 @@ class UsersController extends Controller
             $user->save();
             $obj_data->user = $user;
 
-            Mail::to($request->email)->send(new ForgetPasswordEmail($obj_data));
+            Mail::to($user->email)->send(new ForgetPasswordEmail($obj_data));
         } else {
             return response(['message' => ['errors' => ['email' => "We can't find a user with that email address."]]], 422);
         }
@@ -390,7 +410,7 @@ class UsersController extends Controller
         if($user->fill([
             'password' => Hash::make($request->new_password)
         ])->save()){
-            Mail::to('kingstennisnotify@gmail.com')->send(new adminChangeUserPassword($user));
+            Mail::to($user->email)->send(new adminChangeUserPassword($user));
             return response(null, 200);
         } else {
             return response(null, 400);
@@ -487,7 +507,7 @@ class UsersController extends Controller
         $paid_rank->match_ladder_id = $ladder->id;
         if ($paid_rank->save()) {
             $user = User::findOrFail($paid_rank->user_id);
-            Mail::to('kingstennisnotify@gmail.com')->send(new adminChangeUserSeason($user));
+            Mail::to($user->email)->send(new adminChangeUserSeason($user));
             return response(null, 200);
         } else {
             return response(null, 400);

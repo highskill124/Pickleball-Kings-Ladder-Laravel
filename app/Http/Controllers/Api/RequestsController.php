@@ -112,7 +112,7 @@ class RequestsController extends Controller
         $requests->time = $request->time;
         if ($requests->save()) {
             $user = User::findOrFail($request->request_by);
-            Mail::to('kingstennisnotify@gmail.com')->send(new purposeMail($user));
+            Mail::to($user->email)->send(new purposeMail($user));
             return response(null, 200);
         } else {
             return response(null, 400);
@@ -182,7 +182,7 @@ class RequestsController extends Controller
         if($users){
             foreach ($users as $key => $value) {
                 // $value->user->email;
-                Mail::to('kingstennisnotify@gmail.com')->send(new purposeAllEmail($user));
+                Mail::to($value->user->email)->send(new purposeAllEmail($user));
                 # code...
             }
         }     
