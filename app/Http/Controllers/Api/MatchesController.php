@@ -296,7 +296,7 @@ class MatchesController extends Controller
             // if($user2_points>10){
             //     $user2_rank = 10;
             // }
-            $user2_rank = $user2_win_points;
+            $user2_rank = $data->point1_user2 + $data->point2_user2 + $data->point3_user2;
             if($user2_rank>12){
                 $user2_rank = 12;
             }
@@ -360,7 +360,7 @@ class MatchesController extends Controller
             }
 
             // calculate points for loser (user1)
-            $user1_rank = $user1_win_points;
+            $user1_rank = $data->point1_user1 + $data->point2_user1+ $data->point3_user1;
             if($user1_rank>12){
                 $user1_rank = 12;
             }

@@ -62,6 +62,7 @@ Route::post('user/admin-update-season/{id?}', 'App\Http\Controllers\Api\UsersCon
 Route::get('user-paid-in-ladders/{id?}', 'App\Http\Controllers\Api\UserPaidRankingsController@getPaidByUser');
 
 Route::post('social_links/get-by-type', 'App\Http\Controllers\Api\SocialLinksController@getByType');
+Route::get('get-recently-completed-season', 'App\Http\Controllers\Api\SeasonsController@getRecentlyCompleted');
 
 Route::apiResource('user-paid-rankings', 'App\Http\Controllers\Api\UserPaidRankingsController');
 Auth::routes(['verify' => true]);

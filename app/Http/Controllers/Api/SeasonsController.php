@@ -7,6 +7,7 @@ use App\Models\MatchLadders;
 use App\Models\MatchRankCategory;
 use App\Models\MatchSingleDoubles;
 use App\Models\Seasons;
+use App\Models\UserMatchesLadderRank;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -14,7 +15,7 @@ class SeasonsController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth:sanctum', 'verified'])->except('index','getNextAvailableSeason');
+        $this->middleware(['auth:sanctum', 'verified'])->except('index','getNextAvailableSeason','getRecentlyCompleted');
     }
     /**
      * Display a listing of the resource.
@@ -241,5 +242,20 @@ class SeasonsController extends Controller
             
         }
         return $season;
+    }
+
+    public function getRecentlyCompleted(){
+        $season = Seasons::orderBy('end_date', 'ASC')->first(); 
+        $ladders = MatchLadders::select('id','title','gender')->where('seasons_id', $season->id)->get();
+        $winners = [];
+        foreach ($ladders as $key => $value) {
+            // # code...
+           $data = UserMatchesLadderRank::where('match_ladder_id',$value->id)->orderBy('rank_points', 'desc')->with('match_ladder')->with('user')->first();
+           if($data){
+            $winners[]=$data;
+           }
+        }
+
+        return $winners;
     }
 }

@@ -19,4 +19,8 @@ class UserMatchesLadderRank extends Model
     {
         return $this->belongsTo(User::class,'user_id');
     }
+    public function match_ladder()
+    {
+        return $this->belongsTo(MatchLadders::class,'match_ladder_id');
+    }
 }
