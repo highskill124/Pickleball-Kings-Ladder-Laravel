@@ -106,13 +106,13 @@ class UsersController extends Controller
                 $input['imagename'] = $uploadFileName;
              
                 $destinationPath = public_path('/images/users');
-                // $img = Image::make($image->getRealPath());
+                $img = Image::make($image->getRealPath());
                 
-                // $img->resize(500, 500)->save($destinationPath . '/' . $input['imagename']);
+                $img->resize(500, 500)->save($destinationPath . '/' . $input['imagename']);
            
                 // $destinationPath = public_path('/images');
                 // $image->move($destinationPath, $input['imagename']);
-                $request->profile_picture->move(public_path('images/users'), $uploadFileName);
+                // $request->profile_picture->move(public_path('images/users'), $uploadFileName);
                 $user->profile_picture = $uploadFileName;
                 $user->save();
             }
@@ -344,6 +344,31 @@ class UsersController extends Controller
         $user->state = isset($input_data['state']) ? $input_data['state'] : '';
         $user->zip_code = isset($input_data['zip_code']) ? $input_data['zip_code'] : '';
         if ($user->save()) {
+
+            if ($request->has('profile_picture') &&  $request->profile_picture != null) {
+                $uploadFileName = $user->id . "_" . $request->profile_picture->getClientOriginalName();
+                //checking and creating directory 
+                if (!file_exists(public_path('images/users'))) {
+                    mkdir(public_path('images/users'), 0755, true);
+                }
+                
+                $image = $request->file('profile_picture');
+                $input['imagename'] = $uploadFileName;
+    
+                $destinationPath = public_path('/images/users');
+                $img = Image::make($image->getRealPath());
+                // $img->resize(500, 500, function ($constraint) {
+                //     $constraint->aspectRatio();
+                // })->save($destinationPath . '/' . $input['imagename']);
+                $img->resize(500, 500)->save($destinationPath . '/' . $input['imagename']);
+                if($user->profile_picture!='avatar.png' && file_exists(public_path('images/users/').$user->profile_picture)){
+                    unlink(public_path('images/users/').$user->profile_picture);
+                }
+                $user->profile_picture = $uploadFileName;
+                $user->save();
+            }
+
+            
             return response($user, 200);
         } else {
             return response(null, 400);

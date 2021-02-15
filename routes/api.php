@@ -65,4 +65,5 @@ Route::post('social_links/get-by-type', 'App\Http\Controllers\Api\SocialLinksCon
 Route::get('get-recently-completed-season', 'App\Http\Controllers\Api\SeasonsController@getRecentlyCompleted');
 
 Route::apiResource('user-paid-rankings', 'App\Http\Controllers\Api\UserPaidRankingsController');
+Route::post('users/{id}', 'App\Http\Controllers\Api\UsersController@update');
 Auth::routes(['verify' => true]);
