@@ -93,7 +93,7 @@ class UsersController extends Controller
             $obj_data = new \stdClass();
             $obj_data->app_name = config('app.name');
             $obj_data->app_client = config('app.client');
-            $obj_data->user = $user;
+            $obj_data->user_id = $user->id;
             Mail::to($user->email)->send(new VerifyEmailAddress($obj_data));
             if ($request->has('profile_picture') &&  $request->profile_picture != null) {
                 $uploadFileName = $user->id . "_" . $request->profile_picture->getClientOriginalName();
