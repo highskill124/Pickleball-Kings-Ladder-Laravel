@@ -246,7 +246,7 @@ class SeasonsController extends Controller
 
     public function getRecentlyCompleted(){
         $now = \Carbon\Carbon::today();
-        $season = Seasons::where('end_date','<',$now)->orderBy('end_date', 'ASC')->first(); 
+        $season = Seasons::where('end_date','<=',$now)->orderBy('end_date', 'ASC')->first(); 
         if($season){
             $results = MatchLadders::orderBy('title','ASC')->select('id','title','gender')->where('seasons_id', $season->id)->get()->groupBy('gender')->toArray();
             
@@ -283,7 +283,7 @@ class SeasonsController extends Controller
     public function getRecentlyCompletedSeason()
     {
         $now = \Carbon\Carbon::today();
-        $season = Seasons::where('end_date','<',$now)->orderBy('end_date', 'ASC')->first(); 
+        $season = Seasons::where('end_date','<=',$now)->orderBy('end_date', 'ASC')->first(); 
         return $season;
     }
 }
