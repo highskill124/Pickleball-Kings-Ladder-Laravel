@@ -15,7 +15,7 @@ class SeasonsController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth:sanctum', 'verified'])->except('index','getNextAvailableSeason','getRecentlyCompleted');
+        $this->middleware(['auth:sanctum', 'verified'])->except('index','getNextAvailableSeason','getRecentlyCompleted','getRecentlyCompletedSeason');
     }
     /**
      * Display a listing of the resource.
@@ -245,17 +245,45 @@ class SeasonsController extends Controller
     }
 
     public function getRecentlyCompleted(){
-        $season = Seasons::orderBy('end_date', 'ASC')->first(); 
-        $ladders = MatchLadders::select('id','title','gender')->where('seasons_id', $season->id)->get();
-        $winners = [];
-        foreach ($ladders as $key => $value) {
-            // # code...
-           $data = UserMatchesLadderRank::where('match_ladder_id',$value->id)->orderBy('rank_points', 'desc')->with('match_ladder')->with('user')->first();
-           if($data){
-            $winners[]=$data;
-           }
+        $now = \Carbon\Carbon::today();
+        $season = Seasons::where('end_date','<',$now)->orderBy('end_date', 'ASC')->first(); 
+        if($season){
+            $results = MatchLadders::orderBy('title','ASC')->select('id','title','gender')->where('seasons_id', $season->id)->get()->groupBy('gender')->toArray();
+            
+            // to show them in order
+            $mens = isset($results['M']) ? $results['M'] : [];
+            $womens = isset($results['F']) ? $results['F'] : [];
+            $mixed =  isset($results['MX']) ? $results['MX'] : [];
+            $results =array_merge( $mens,  $womens);
+            $ladders = array_merge( $results,  $mixed);
+            $users = [];
+            $i = 0;
+            foreach ($ladders as $key => $value) {
+               $winner = UserMatchesLadderRank::where('match_ladder_id',$value['id'])->orderBy('rank_points', 'desc')->with('match_ladder')->with('user')->first();
+               
+               if($winner){
+                   $i++;
+                   $val=new \stdClass();
+                $loser = UserMatchesLadderRank::where('match_ladder_id',$value['id'])->where('rank_points', '<', $winner->rank_points)->with('match_ladder')->with('user')->first();
+                $val->winner=$winner;
+                $val->loser=$loser;
+                $val->match_ladder = $value;
+                array_push($users,$val);
+               } else{
+                $val=new \stdClass();
+                $val->match_ladder = $value;
+                array_push($users,$val);
+               }
+            }
+    
+            return $users;
         }
-
-        return $winners;
+       
+    }
+    public function getRecentlyCompletedSeason()
+    {
+        $now = \Carbon\Carbon::today();
+        $season = Seasons::where('end_date','<',$now)->orderBy('end_date', 'ASC')->first(); 
+        return $season;
     }
 }

@@ -62,7 +62,8 @@ Route::post('user/admin-update-season/{id?}', 'App\Http\Controllers\Api\UsersCon
 Route::get('user-paid-in-ladders/{id?}', 'App\Http\Controllers\Api\UserPaidRankingsController@getPaidByUser');
 
 Route::post('social_links/get-by-type', 'App\Http\Controllers\Api\SocialLinksController@getByType');
-Route::get('get-recently-completed-season', 'App\Http\Controllers\Api\SeasonsController@getRecentlyCompleted');
+Route::get('get-recently-completed', 'App\Http\Controllers\Api\SeasonsController@getRecentlyCompleted');
+Route::get('get-recently-completed-season', 'App\Http\Controllers\Api\SeasonsController@getRecentlyCompletedSeason');
 
 Route::apiResource('user-paid-rankings', 'App\Http\Controllers\Api\UserPaidRankingsController');
 Route::post('users/{id}', 'App\Http\Controllers\Api\UsersController@update');
