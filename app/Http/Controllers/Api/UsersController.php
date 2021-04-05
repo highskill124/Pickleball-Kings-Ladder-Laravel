@@ -519,26 +519,32 @@ class UsersController extends Controller
         return $users;
     }
 
-    /** CTA for updating user season from admin */
+   /** CTA for updating user season from admin */
 
-    public function adminUpdateSeason(Request $request,$id){
-        $this->validate($request, [
-            'id' => 'required',
-            'rank_category' => 'required',
-            'season_id' => 'required',
-        ]);
-        $paid_rank = UserPaidRankings::findOrFail($id);
-        $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$request['rank_category'])->where('seasons_id', $request->season_id)->first();
-        $paid_rank->match_ladder_id = $ladder->id;
-        if ($paid_rank->save()) {
-            $user = User::findOrFail($paid_rank->user_id);
-            Mail::to($user->email)->send(new adminChangeUserSeason($user));
-            return response(null, 200);
-        } else {
-            return response(null, 400);
-        }
+   public function adminUpdateSeason(Request $request, $id)
+   {
+       $this->validate($request, [
+           'id' => 'required',
+           'rank_category' => 'required',
+           'season_id' => 'required',
+           'match_ladder_id'
+       ]);
+       $paid_rank = UserPaidRankings::findOrFail($id);
+       $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $request['rank_category'])->where('seasons_id', $request->season_id)->first();
+       $paid_rank->match_ladder_id = $ladder->id;
 
-    }
+       if (isset($request['match_ladder_id'])) {
+           $paid_rank->match_ladder_id = $request['match_ladder_id'];
+       }
+       
+       if ($paid_rank->save()) {
+           $user = User::findOrFail($paid_rank->user_id);
+           Mail::to($user->email)->send(new adminChangeUserSeason($user));
+           return response(null, 200);
+       } else {
+           return response(null, 400);
+       }
+   }
 
 /** CTA for getting users payment history from admin */
 
