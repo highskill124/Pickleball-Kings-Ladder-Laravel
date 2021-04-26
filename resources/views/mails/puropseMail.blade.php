@@ -1,1 +1,1 @@
-This emails is regarding a purposal from  {{$data->full_name ? $data->full_name :''}}
+{{$data->full_name ? $data->full_name :''}} has proposed a match on Kings Tennis Ladder. 

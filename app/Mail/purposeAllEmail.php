@@ -30,7 +30,7 @@ class purposeAllEmail extends Mailable
      */
     public function build()
     {
-        return $this->from(config('mail.from.address'))
+        return $this->from(config('mail.from.address'))->subject('Proposal Email')
         ->view('mails.puropseAll');
     }
 }

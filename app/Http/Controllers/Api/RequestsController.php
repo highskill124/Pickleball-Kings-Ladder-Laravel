@@ -109,7 +109,7 @@ class RequestsController extends Controller
        
         $requests->request_by = $request->request_by;
         $requests->location = $request->location;
-        $requests->time = $request->time;
+        $requests->time = Carbon::parse($request->time)->format('Y-m-d H:i:s');
         if ($requests->save()) {
             $user = User::findOrFail($request->request_by);
             Mail::to($user->email)->send(new purposeMail($user));
