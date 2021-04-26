@@ -24,7 +24,7 @@ class UsersController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth:sanctum', 'verified'])->except('store','emailVerified','passwordResetEmail','updateForgetPassword');
+        $this->middleware(['auth:sanctum', 'verified'])->except('store', 'emailVerified', 'passwordResetEmail', 'updateForgetPassword');
     }
     /**
      * Display a listing of the resource.
@@ -33,15 +33,14 @@ class UsersController extends Controller
      */
     public function index()
     {
-        if(isset($_GET['gender'])){
-            $users = User::where('gender', $_GET['gender'])->where('id','!=',auth()->user()->id)->get();
+        if (isset($_GET['gender'])) {
+            $users = User::where('gender', $_GET['gender'])->where('id', '!=', auth()->user()->id)->get();
             return $users;
-        }
-        else{
+        } else {
             $users = User::all();
             return $users;
         }
-        
+
         //
     }
 
@@ -69,7 +68,7 @@ class UsersController extends Controller
             'last_name' => 'required|string|max:50|min:3',
             'email' => 'required|string|max:50|unique:users',
             'password' => 'required|string|max:50|min:3',
-            'confirm_password' => 'required|string|max:50|min:3|same:password',            
+            'confirm_password' => 'required|string|max:50|min:3|same:password',
         ]);
 
         $user = new User;
@@ -86,10 +85,10 @@ class UsersController extends Controller
         $user->zip_code = isset($input_data['zip_code']) ? $input_data['zip_code'] : '';
         $user->source = isset($input_data['source']) ? $input_data['source'] : '';
         $user->skill_level = isset($input_data['skill_level']) ? $input_data['skill_level'] : '';
-        $user->get_proposal_emails = isset($input_data['get_proposal_emails']) ? $input_data['get_proposal_emails'] : '';     
-       
+        $user->get_proposal_emails = isset($input_data['get_proposal_emails']) ? $input_data['get_proposal_emails'] : '';
 
-        if ($user->save()) {     
+
+        if ($user->save()) {
             $obj_data = new \stdClass();
             $obj_data->app_name = config('app.name');
             $obj_data->app_client = config('app.client');
@@ -104,19 +103,19 @@ class UsersController extends Controller
                 }
                 $image = $request->file('profile_picture');
                 $input['imagename'] = $uploadFileName;
-             
+
                 $destinationPath = public_path('/images/users');
                 $img = Image::make($image->getRealPath());
-                
+
                 $img->resize(500, 500)->save($destinationPath . '/' . $input['imagename']);
-           
+
                 // $destinationPath = public_path('/images');
                 // $image->move($destinationPath, $input['imagename']);
                 // $request->profile_picture->move(public_path('images/users'), $uploadFileName);
                 $user->profile_picture = $uploadFileName;
                 $user->save();
             }
-            $this->paidCategories($request, $user);         
+            $this->paidCategories($request, $user);
             return response(null, 200);
         } else {
             return response(null, 400);
@@ -124,163 +123,165 @@ class UsersController extends Controller
 
         //
     }
-    public static function paidCategories($request, $user){
+    public static function paidCategories($request, $user)
+    {
         $input_data = $request->all();
-          /*
+        /*
         generate paid rankings on user create
         */
-        
-        if(isset($input_data['singles'])){
-            
+
+        if (isset($input_data['singles'])) {
+
             $request->validate([
                 'singles' => 'required|exists:match_rank_categories,id',
             ]);
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['singles'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['singles'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
             $paid_rankings = new UserPaidRankings();
             $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
-        if(isset($input_data['additional_singles'])){           
+        if (isset($input_data['additional_singles'])) {
             $request->validate([
                 'additional_singles' => 'required|exists:match_rank_categories,id',
             ]);
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['additional_singles'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['additional_singles'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
             $paid_rankings = new UserPaidRankings();
             $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
-        if(isset($input_data['doubles'])){           
+        if (isset($input_data['doubles'])) {
             $request->validate([
                 'doubles' => 'required|exists:match_rank_categories,id',
             ]);
 
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['doubles'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['doubles'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
             $paid_rankings = new UserPaidRankings();
             $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
-        if(isset($input_data['double_partner'])){            
+        if (isset($input_data['double_partner'])) {
             $request->validate([
                 'double_partner' => 'required|exists:match_rank_categories,id',
             ]);
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['double_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['double_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
             $paid_rankings = new UserPaidRankings();
             $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
-        if(isset($input_data['double_second_partner'])){
+        if (isset($input_data['double_second_partner'])) {
             $request->validate([
                 'double_second_partner' => 'required|exists:match_rank_categories,id',
             ]);
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['double_second_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['double_second_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
             $paid_rankings = new UserPaidRankings();
             $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
-        if(isset($input_data['additional_doubles'])){
+        if (isset($input_data['additional_doubles'])) {
             $request->validate([
                 'additional_doubles' => 'required|exists:match_rank_categories,id',
             ]);
 
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['additional_doubles'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['additional_doubles'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
             $paid_rankings = new UserPaidRankings();
             $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
-        if(isset($input_data['additional_double_partner'])){
+        if (isset($input_data['additional_double_partner'])) {
             $request->validate([
                 'additional_double_partner' => 'required|exists:match_rank_categories,id',
             ]);
 
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['additional_double_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['additional_double_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
             $paid_rankings = new UserPaidRankings();
             $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
-        if(isset($input_data['additional_double_second_partner'])){
+        if (isset($input_data['additional_double_second_partner'])) {
             $request->validate([
                 'additional_double_second_partner' => 'required|exists:match_rank_categories,id',
             ]);
 
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['additional_double_second_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['additional_double_second_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
 
             $paid_rankings = new UserPaidRankings();
             $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
-        if(isset($input_data['mixed_doubles'])){
+        if (isset($input_data['mixed_doubles'])) {
             $request->validate([
                 'mixed_doubles' => 'required|exists:match_rank_categories,id',
             ]);
 
 
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['mixed_doubles'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
-
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['mixed_doubles'])->where('seasons_id', $request->season_id)->where('gender', 'MX')->first();
+// dd($ladder);
             $paid_rankings = new UserPaidRankings();
+            // dd($paid_rankings);
             $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
-        if(isset($input_data['mixed_doubles_partner'])){
+        if (isset($input_data['mixed_doubles_partner'])) {
             $request->validate([
                 'mixed_doubles_partner' => 'required|exists:match_rank_categories,id',
             ]);
 
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['mixed_doubles_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['mixed_doubles_partner'])->where('seasons_id', $request->season_id)->where('gender', 'MX')->first();
 
             $paid_rankings = new UserPaidRankings();
             $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
-        if(isset($input_data['mixed_doubles_second_partner'])){
+        if (isset($input_data['mixed_doubles_second_partner'])) {
             $request->validate([
                 'mixed_doubles_second_partner' => 'required|exists:match_rank_categories,id',
             ]);
 
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['mixed_doubles_second_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['mixed_doubles_second_partner'])->where('seasons_id', $request->season_id)->where('gender', 'MX')->first();
             $paid_rankings = new UserPaidRankings();
             $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
-        if(isset($input_data['additional_mixed_doubles'])){
+        if (isset($input_data['additional_mixed_doubles'])) {
             $request->validate([
                 'additional_mixed_doubles' => 'required|exists:match_rank_categories,id',
             ]);
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['additional_mixed_doubles'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['additional_mixed_doubles'])->where('seasons_id', $request->season_id)->where('gender', 'MX')->first();
 
             $paid_rankings = new UserPaidRankings();
             $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
-        if(isset($input_data['additional_mixed_doubles_partner'])){
+        if (isset($input_data['additional_mixed_doubles_partner'])) {
             $request->validate([
                 'additional_mixed_doubles_partner' => 'required|exists:match_rank_categories,id',
             ]);
 
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['additional_mixed_doubles_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['additional_mixed_doubles_partner'])->where('seasons_id', $request->season_id)->where('gender', 'MX')->first();
 
             $paid_rankings = new UserPaidRankings();
             $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
             $paid_rankings->save();
         }
-        if(isset($input_data['additional_mixed_doubles_second_partner'])){
+        if (isset($input_data['additional_mixed_doubles_second_partner'])) {
             $request->validate([
                 'additional_mixed_doubles_second_partner' => 'required|exists:match_rank_categories,id',
             ]);
 
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id',$input_data['additional_mixed_doubles_second_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['additional_mixed_doubles_second_partner'])->where('seasons_id', $request->season_id)->where('gender', 'MX')->first();
 
             $paid_rankings = new UserPaidRankings();
             $paid_rankings->match_ladder_id = $ladder->id;
@@ -344,36 +345,33 @@ class UsersController extends Controller
         $user->state = isset($input_data['state']) ? $input_data['state'] : '';
         $user->zip_code = isset($input_data['zip_code']) ? $input_data['zip_code'] : '';
         if ($user->save()) {
-
             if ($request->has('profile_picture') &&  $request->profile_picture != null) {
                 $uploadFileName = $user->id . "_" . $request->profile_picture->getClientOriginalName();
                 //checking and creating directory 
                 if (!file_exists(public_path('images/users'))) {
                     mkdir(public_path('images/users'), 0755, true);
                 }
-                
+
                 $image = $request->file('profile_picture');
                 $input['imagename'] = $uploadFileName;
-    
+
                 $destinationPath = public_path('/images/users');
                 $img = Image::make($image->getRealPath());
                 // $img->resize(500, 500, function ($constraint) {
                 //     $constraint->aspectRatio();
                 // })->save($destinationPath . '/' . $input['imagename']);
                 $img->resize(500, 500)->save($destinationPath . '/' . $input['imagename']);
-                if($user->profile_picture!='avatar.png' && file_exists(public_path('images/users/').$user->profile_picture)){
-                    unlink(public_path('images/users/').$user->profile_picture);
+                if ($user->profile_picture != 'avatar.png' && file_exists(public_path('images/users/') . $user->profile_picture)) {
+                    unlink(public_path('images/users/') . $user->profile_picture);
                 }
                 $user->profile_picture = $uploadFileName;
                 $user->save();
             }
-
-            
             return response($user, 200);
         } else {
             return response(null, 400);
         }
-        
+
         //
     }
 
@@ -394,7 +392,7 @@ class UsersController extends Controller
             return response(null, 400);
         }
     }
-                        /** CTA for verify email*/
+    /** CTA for verify email*/
 
     public function emailVerified(Request $request, $id)
     {
@@ -403,7 +401,7 @@ class UsersController extends Controller
         $user->save();
         return response(null, 200);
     }
-                    /** CTA for sending reset email */
+    /** CTA for sending reset email */
 
     public function passwordResetEmail(Request $request)
     {
@@ -424,17 +422,18 @@ class UsersController extends Controller
     }
 
 
-                /** CTA for update user password by admin*/
+    /** CTA for update user password by admin*/
 
-    public function  adminUpdatePassword(Request $request, $id){
+    public function  adminUpdatePassword(Request $request, $id)
+    {
         $user = User::findOrFail($id);
         $this->validate($request, [
             'new_password' => 'required|max:50|min:3|different:current_password',
             'confirm_password' => 'required|string|max:50|min:3|same:new_password',
         ]);
-        if($user->fill([
+        if ($user->fill([
             'password' => Hash::make($request->new_password)
-        ])->save()){
+        ])->save()) {
             Mail::to($user->email)->send(new adminChangeUserPassword($user));
             return response(null, 200);
         } else {
@@ -443,9 +442,10 @@ class UsersController extends Controller
     }
 
 
-            /** CTA for update forget password given instructions in email token */
+    /** CTA for update forget password given instructions in email token */
 
-    public function UpdatePassword(Request $request, $id){
+    public function UpdatePassword(Request $request, $id)
+    {
         $user = User::findOrFail($id);
         $this->validate($request, [
             'new_password' => 'required|max:50|min:3|different:current_password',
@@ -467,7 +467,7 @@ class UsersController extends Controller
         }
     }
 
-            /** CTA for updating forget password */
+    /** CTA for updating forget password */
     public function updateForgetPassword(Request $request)
     {
 
@@ -494,68 +494,74 @@ class UsersController extends Controller
         }
     }
 
-        /** CTA for getting paid user by id */
+    /** CTA for getting paid user by id */
 
-    public function withCategories($id){
-        $categories = UserPaidRankings::where('user_id',$id)->get();
+    public function withCategories($id)
+    {
+        $categories = UserPaidRankings::where('user_id', $id)->get();
         return $categories;
     }
 
     /** CTA for getting paid users in a ladder */
 
-    public function getPaidUserInLadder(Request $request, $id){
-        
-        $query = UserPaidRankings::query();
-        if(isset($_GET['with_current'])){
-            $query->with('user')->whereHas('user', function($user){
-                $user->where('gender','=',$_GET['gender']); })->where('match_ladder_id', $id);
+    public function getPaidUserInLadder(Request $request, $id)
+    {
 
-        } else{
-            $query->with('user')->whereHas('user', function($user){
-                $user->where('gender','=',$_GET['gender']); })->where('match_ladder_id', $id)->where('user_id','!=',auth()->user()->id);
+        $query = UserPaidRankings::query();
+        if (isset($_GET['with_current'])) {
+            $query->with('user')->whereHas('user', function ($user) {
+                $user->where('gender', '=', $_GET['gender']);
+            })->where('match_ladder_id', $id);
+        } else {
+            $query->with('user')->whereHas('user', function ($user) {
+                $user->where('gender', '=', $_GET['gender']);
+            })->where('match_ladder_id', $id)->where('user_id', '!=', auth()->user()->id);
         }
-       $users = $query->get();
-       
+        $users = $query->get();
+
         return $users;
     }
 
-   /** CTA for updating user season from admin */
+    /** CTA for updating user season from admin */
 
-   public function adminUpdateSeason(Request $request, $id)
-   {
-       $this->validate($request, [
-           'id' => 'required',
-           'rank_category' => 'required',
-           'season_id' => 'required',
-           'match_ladder_id'
-       ]);
-       $paid_rank = UserPaidRankings::findOrFail($id);
-       $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $request['rank_category'])->where('seasons_id', $request->season_id)->first();
-       $paid_rank->match_ladder_id = $ladder->id;
+    public function adminUpdateSeason(Request $request, $id)
+    {
+        $this->validate($request, [
+            'id' => 'required',
+            'rank_category' => 'required',
+            'season_id' => 'required',
+            'match_ladder_id'
+        ]);
+        $paid_rank = UserPaidRankings::findOrFail($id);
+        $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $request['rank_category'])->where('seasons_id', $request->season_id)->first();
+        $paid_rank->match_ladder_id = $ladder->id;
 
-       if (isset($request['match_ladder_id'])) {
-           $paid_rank->match_ladder_id = $request['match_ladder_id'];
-       }
-       
-       if ($paid_rank->save()) {
-           $user = User::findOrFail($paid_rank->user_id);
-           Mail::to($user->email)->send(new adminChangeUserSeason($user));
-           return response(null, 200);
-       } else {
-           return response(null, 400);
-       }
-   }
+        if (isset($request['match_ladder_id'])) {
+            $paid_rank->match_ladder_id = $request['match_ladder_id'];
+        }
+        
+        if ($paid_rank->save()) {
+            $user = User::findOrFail($paid_rank->user_id);
+            Mail::to($user->email)->send(new adminChangeUserSeason($user));
+            return response(null, 200);
+        } else {
+            return response(null, 400);
+        }
+    }
 
-/** CTA for getting users payment history from admin */
 
-    public function getPaymenthistory(){
+
+    /** CTA for getting users payment history from admin */
+
+    public function getPaymenthistory()
+    {
         try {
             $params = array('count' => 10, 'start_index' => 5);
-        
+
             $payments = Payments::all($params, $apiContext);
         } catch (Exception $ex) {
             // NOTE: PLEASE DO NOT USE RESULTPRINTER CLASS IN YOUR ORIGINAL CODE. FOR SAMPLE ONLY
-           return ["List Payments", "Payment", null, $params, $ex];
+            return ["List Payments", "Payment", null, $params, $ex];
             exit(1);
         }
     }

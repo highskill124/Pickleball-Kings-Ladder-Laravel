@@ -11,7 +11,7 @@ class UserPaidRankings extends Model
     use HasFactory,Uuid;
     protected $table = 'user_paid_rankings';
     protected $fillable = [
-        'id',
+        'id','user_id', 'match_ladder_id'
     ];
 
     public $incrementing = false;
