@@ -86,7 +86,8 @@ class MatchLaddersController extends Controller
         //
     }
     public function getBySeason($sid){
-        $results =  MatchLadders::orderBy('title','ASC')->where('seasons_id', $sid)->get()->groupBy('gender')->toArray();
+        // $results =  MatchLadders::orderBy('title','ASC')->where('seasons_id', $sid)->get()->groupBy('gender')->toArray();
+        $results =  MatchLadders::orderBy('title','ASC')->where('seasons_id', $sid)->get();
        
         /** :: Client dont need Seprate Women, Men or Mix */
        
