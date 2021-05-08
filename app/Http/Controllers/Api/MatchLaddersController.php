@@ -87,11 +87,14 @@ class MatchLaddersController extends Controller
     }
     public function getBySeason($sid){
         $results =  MatchLadders::orderBy('title','ASC')->where('seasons_id', $sid)->get()->groupBy('gender')->toArray();
-        $mens = isset($results['M']) ? $results['M'] : [];
-        $womens = isset($results['F']) ? $results['F'] : [];
-        $mixed =  isset($results['MX']) ? $results['MX'] : [];
-        $results =array_merge( $mens,  $womens);
-        $all = array_merge( $results,  $mixed);
-        return $all;
+       
+        /** :: Client dont need Seprate Women, Men or Mix */
+       
+        // $mens = isset($results['M']) ? $results['M'] : [];
+        // $womens = isset($results['F']) ? $results['F'] : [];
+        // $mixed =  isset($results['MX']) ? $results['MX'] : [];
+        // $results =array_merge( $mens,  $womens);
+        // $all = array_merge( $results,  $mixed);
+        return $results;
     }
 }
