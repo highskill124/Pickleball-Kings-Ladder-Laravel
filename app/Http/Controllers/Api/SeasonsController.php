@@ -98,31 +98,39 @@ class SeasonsController extends Controller
 
             foreach ($match_categories as $key => $data) {
 
-                /*    for mix loop one time */
-                if($data->match_single_doubles_id=='ef0084e6-90cb-4dd0-8c49-5a622d4c5e33'){
-                    $match_ladder = new MatchLadders();
-                    $match_ladder->title =  $data->title . ' ' . $data->matchsingledoubles->title;
-                    $match_ladder->seasons_id = $season->id;
-                    $match_ladder->gender = "MX";
-                    $match_ladder->match_rank_categories_id = $data->id;
-                    $match_ladder->save();
-                }
-                else{
-                    $match_ladder = new MatchLadders();
-                    $match_ladder->title =  "Men's " . ' ' . $data->title . ' ' . $data->matchsingledoubles->title;
-                    $match_ladder->seasons_id = $season->id;
-                    $match_ladder->gender = "M";
-                    $match_ladder->match_rank_categories_id = $data->id;
-                    $match_ladder->save();
+                $match_ladder = new MatchLadders();
+                $match_ladder->title = $data->title . ' ' . $data->matchsingledoubles->title;
+                $match_ladder->seasons_id = $season->id;
+                $match_ladder->gender = "M/F";
+                $match_ladder->match_rank_categories_id = $data->id;
+                $match_ladder->save();
+
+                // /*    for mix loop one time */   // :: CLIENT NO MORE NEED MIX DOUBLES and NO MORE SEPARATE MEN AND WOMEN IN PICKLE BALL
+
+                // if($data->match_single_doubles_id=='ef0084e6-90cb-4dd0-8c49-5a622d4c5e33'){
+                //     $match_ladder = new MatchLadders();
+                //     $match_ladder->title =  $data->title . ' ' . $data->matchsingledoubles->title;
+                //     $match_ladder->seasons_id = $season->id;
+                //     $match_ladder->gender = "MX";
+                //     $match_ladder->match_rank_categories_id = $data->id;
+                //     $match_ladder->save();
+                // }
+                // else{
+                //     $match_ladder = new MatchLadders();
+                //     $match_ladder->title =  "Men's " . ' ' . $data->title . ' ' . $data->matchsingledoubles->title;
+                //     $match_ladder->seasons_id = $season->id;
+                //     $match_ladder->gender = "M";
+                //     $match_ladder->match_rank_categories_id = $data->id;
+                //     $match_ladder->save();
 
 
-                    $match_ladder = new MatchLadders();
-                    $match_ladder->title =  "Women's " . ' ' . $data->title . ' ' . $data->matchsingledoubles->title;
-                    $match_ladder->seasons_id = $season->id;
-                    $match_ladder->gender = "F";
-                    $match_ladder->match_rank_categories_id = $data->id;
-                    $match_ladder->save();
-                }
+                //     $match_ladder = new MatchLadders();
+                //     $match_ladder->title =  "Women's " . ' ' . $data->title . ' ' . $data->matchsingledoubles->title;
+                //     $match_ladder->seasons_id = $season->id;
+                //     $match_ladder->gender = "F";
+                //     $match_ladder->match_rank_categories_id = $data->id;
+                //     $match_ladder->save();
+                // }
                 
             }
             return response(null, 200);
