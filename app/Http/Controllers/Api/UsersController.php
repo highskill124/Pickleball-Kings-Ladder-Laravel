@@ -135,7 +135,7 @@ class UsersController extends Controller
             $request->validate([
                 'singles' => 'required|exists:match_rank_categories,id',
             ]);
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['singles'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['singles'])->where('seasons_id', $request->season_id)->first();
             $paid_rankings = new UserPaidRankings();
             $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
@@ -145,7 +145,7 @@ class UsersController extends Controller
             $request->validate([
                 'additional_singles' => 'required|exists:match_rank_categories,id',
             ]);
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['additional_singles'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['additional_singles'])->where('seasons_id', $request->season_id)->first();
             $paid_rankings = new UserPaidRankings();
             $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
@@ -156,7 +156,7 @@ class UsersController extends Controller
                 'doubles' => 'required|exists:match_rank_categories,id',
             ]);
 
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['doubles'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['doubles'])->where('seasons_id', $request->season_id)->first();
             $paid_rankings = new UserPaidRankings();
             $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
@@ -166,7 +166,7 @@ class UsersController extends Controller
             $request->validate([
                 'double_partner' => 'required|exists:match_rank_categories,id',
             ]);
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['double_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['double_partner'])->where('seasons_id', $request->season_id)->first();
             $paid_rankings = new UserPaidRankings();
             $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
@@ -176,7 +176,7 @@ class UsersController extends Controller
             $request->validate([
                 'double_second_partner' => 'required|exists:match_rank_categories,id',
             ]);
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['double_second_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['double_second_partner'])->where('seasons_id', $request->season_id)->first();
             $paid_rankings = new UserPaidRankings();
             $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
@@ -187,7 +187,7 @@ class UsersController extends Controller
                 'additional_doubles' => 'required|exists:match_rank_categories,id',
             ]);
 
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['additional_doubles'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['additional_doubles'])->where('seasons_id', $request->season_id)->first();
             $paid_rankings = new UserPaidRankings();
             $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
@@ -198,7 +198,7 @@ class UsersController extends Controller
                 'additional_double_partner' => 'required|exists:match_rank_categories,id',
             ]);
 
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['additional_double_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['additional_double_partner'])->where('seasons_id', $request->season_id)->first();
             $paid_rankings = new UserPaidRankings();
             $paid_rankings->match_ladder_id = $ladder->id;
             $paid_rankings->user_id = $user->id;
@@ -209,7 +209,7 @@ class UsersController extends Controller
                 'additional_double_second_partner' => 'required|exists:match_rank_categories,id',
             ]);
 
-            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['additional_double_second_partner'])->where('seasons_id', $request->season_id)->where('gender', $request->gender)->first();
+            $ladder = MatchLadders::select('id')->where('match_rank_categories_id', $input_data['additional_double_second_partner'])->where('seasons_id', $request->season_id)->first();
 
             $paid_rankings = new UserPaidRankings();
             $paid_rankings->match_ladder_id = $ladder->id;
